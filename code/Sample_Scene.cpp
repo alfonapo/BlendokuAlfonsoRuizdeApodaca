@@ -27,12 +27,13 @@ namespace example
         suspended = true;
         canvas_width  = 1280;
         canvas_height =  720;
+
     }
 
 //--------------------------------------------------------------------------------------------------
 
-    bool Sample_Scene::initialize ()
-    {
+    bool Sample_Scene::initialize () {
+
         // inicializar cada ficha:
         //  para cada ficha:
         //      establecer su posición, tamaño y color
@@ -53,7 +54,7 @@ namespace example
         for(int i = 0; i < numero_de_cajas; i++)
         {
             fichas[i].left_x = fichasX[i];
-            fichas[i].bottom_y = fichasY[0];
+            fichas[i].bottom_y = fichasY[1];
 
             fichas[i].r = 1;
             fichas[i].g = 1;
@@ -84,7 +85,7 @@ namespace example
         for(int i = 0; i < numero_de_cajas; i++)
         {
             casillas[i].left_x = fichasX[i];
-            casillas[i].bottom_y = fichasY[1];
+            casillas[i].bottom_y = fichasY[0];
 
             casillas[i].ficha = nullptr;
         }
@@ -93,11 +94,16 @@ namespace example
         {
             cajas.push_back(&casilla);
         }
+
         // meter las fichas en cajas
         // meter las casillas en cajas
         ficha_tocada = nullptr;
+
         state = PLAYING;
+        return true;
     }
+
+
 
 //--------------------------------------------------------------------------------------------------
 
@@ -120,12 +126,39 @@ namespace example
         switch (event.id)
         {
             case ID(touch-started):
+
+            {
+                // Se determina qué opción se ha dejado de tocar la última y se actúa como corresponda:
+
+                Point2f touch_location = { *event[ID(x)].as< var::Float > (), *event[ID(y)].as< var::Float > () };
+
+                for (auto ficha : fichas)
+                {
+                    if(ficha.contains(touch_location[0], touch_location[1]))
+                    {
+
+                        ficha_tocada = &ficha;
+                        ficha_tocada_posicion_inicial_x = ficha.left_x;
+                        ficha_tocada_posicion_inicial_y = ficha.bottom_y;
+
+                    }
+                }
+
+                break;
+            }
+
             case ID(touch-moved):
 
             {
                 // Se determina qué opción se ha tocado:
 
                 Point2f touch_location = { *event[ID(x)].as< var::Float > (), *event[ID(y)].as< var::Float > () };
+
+                if(ficha_tocada)
+                {
+                    ficha_tocada->left_x = touch_location[0];
+                    ficha_tocada->bottom_y = touch_location[1];
+                }
 
                 break;
             }
@@ -136,6 +169,14 @@ namespace example
                 // Se determina qué opción se ha dejado de tocar la última y se actúa como corresponda:
 
                 Point2f touch_location = { *event[ID(x)].as< var::Float > (), *event[ID(y)].as< var::Float > () };
+
+                for(auto casilla : casillas)
+                {
+                    if(casilla.contains(touch_location[0],touch_location[1]))
+                    {
+                        casilla.ficha = ficha_tocada;
+                    }
+                }
 
                 break;
             }
@@ -162,7 +203,7 @@ namespace example
     void Sample_Scene::render (basics::Graphics_Context::Accessor & context) {
         if (!suspended)
         {
-            Canvas *canvas = context->get_renderer<Canvas>(ID(canvas));
+            Canvas * canvas = context->get_renderer<Canvas>(ID(canvas));
 
             if (!canvas)
             {
@@ -174,9 +215,14 @@ namespace example
                 if (canvas) {
                     canvas->clear();
 
-                    for( auto caja : cajas)
+                    for( auto ficha : fichas)
                     {
-                        caja->render(canvas);
+                        ficha.render(canvas);
+                    }
+
+                    for( auto casilla : casillas)
+                    {
+                        casilla.render(canvas);
                     }
                 }
             }
