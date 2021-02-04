@@ -69,13 +69,14 @@ namespace example
         };
 
 
-
         /* *
          * ficha coloreada (r,g,b)
          * */
         struct Ficha : public Caja
         {
             float r, g, b;
+
+            bool colocada;
 
             void render (Canvas * canvas) override
             {
@@ -103,28 +104,33 @@ namespace example
                     aux.render(canvas);
                 }
 
-                canvas->set_color (150, 150, 150);
-                canvas->draw_rectangle({left_x, bottom_y}, {anchoXalto,anchoXalto});
+                canvas->set_color (1, 1, 1);
+                canvas->draw_rectangle({left_x, bottom_y}, {anchoXalto, anchoXalto});
             }
         };
 
-
+        struct RGB
+        {
+            float r, g, b;
+        };
 
         std::vector< Ficha   > fichas;
         std::vector< Casilla > casillas;
         std::vector< Caja * > cajas;
+        std::vector< RGB > colores;
 
         Ficha * ficha_tocada;
-        float   ficha_tocada_posicion_inicial_x;
-        float   ficha_tocada_posicion_inicial_y;
 
-        const static int     numero_de_cajas = 6;
+        const static int numero_de_cajas = 6;
 
-        float fichasX [numero_de_cajas] = {110, 287, 465, 643, 822, 1000};
-        float fichasY [2] = {117, 478};
+        float       fichasX [numero_de_cajas] = {110, 287, 465, 643, 822, 1000};
+        float       fichasY [2] = {117, 478};
 
-        unsigned       canvas_width;
-        unsigned       canvas_height;
+        unsigned    canvas_width;
+        unsigned    canvas_height;
+
+        int         fichas_colocadas;
+        bool        win_condition;
 
     private:
 
@@ -155,6 +161,7 @@ namespace example
 
         void load ();
         void run  (float time);
+        void randomRNG (Ficha &ficha);
 
     };
 

@@ -15,6 +15,10 @@
 #include <basics/Scaling>
 #include <basics/Rotation>
 #include <basics/Translation>
+#include <cstdlib>
+#include <ctime>
+
+
 
 using namespace basics;
 using namespace std;
@@ -34,9 +38,8 @@ namespace example
 
     bool Sample_Scene::initialize () {
 
-        // inicializar cada ficha:
-        //  para cada ficha:
-        //      establecer su posición, tamaño y color
+        //inicializo generador de numeros aleatorios
+        srand(time(nullptr));
 
         Ficha ficha1;
         fichas.push_back(ficha1);
@@ -55,19 +58,15 @@ namespace example
         {
             fichas[i].left_x = fichasX[i];
             fichas[i].bottom_y = fichasY[1];
-
-            fichas[i].r = 1;
-            fichas[i].g = 1;
-            fichas[i].b = 1;
+            fichas[i].colocada = false;
         }
+
+        randomRNG(fichas[0]);
 
         for(auto ficha: fichas)
         {
             cajas.push_back(&ficha);
         }
-        // inicializar cada casilla:
-        //  para cada casilla:
-        //      establcer su posición y tamaño (ficha es nullptr siempre)
 
         Casilla casilla1;
         casillas.push_back(casilla1);
@@ -95,10 +94,8 @@ namespace example
             cajas.push_back(&casilla);
         }
 
-        // meter las fichas en cajas
-        // meter las casillas en cajas
+        fichas_colocadas = 0;
         ficha_tocada = nullptr;
-
         state = PLAYING;
         return true;
     }
@@ -121,64 +118,105 @@ namespace example
 
 //--------------------------------------------------------------------------------------------------
 
-    void Sample_Scene::handle (Event & event)
+    void Sample_Scene::handle (basics::Event & event)
     {
-        switch (event.id)
+        if (state == PLAYING)
         {
-            case ID(touch-started):
-
+            switch (event.id)
             {
-                // Se determina qué opción se ha dejado de tocar la última y se actúa como corresponda:
-
-                Point2f touch_location = { *event[ID(x)].as< var::Float > (), *event[ID(y)].as< var::Float > () };
-
-                for (auto ficha : fichas)
+                case ID(touch-started):
                 {
-                    if(ficha.contains(touch_location[0], touch_location[1]))
+                    float x = *event[ID(x)].as< var::Float > ();
+                    float y = *event[ID(y)].as< var::Float > ();
+
+                    for( auto &ficha : fichas)
                     {
-
-                        ficha_tocada = &ficha;
-                        ficha_tocada_posicion_inicial_x = ficha.left_x;
-                        ficha_tocada_posicion_inicial_y = ficha.bottom_y;
-
+                        if(ficha.contains(x, y) && ficha.bottom_y == fichasY[1])
+                        {
+                            ficha_tocada = &ficha;
+                            break;
+                        }
                     }
+                    break;
                 }
 
-                break;
-            }
-
-            case ID(touch-moved):
-
-            {
-                // Se determina qué opción se ha tocado:
-
-                Point2f touch_location = { *event[ID(x)].as< var::Float > (), *event[ID(y)].as< var::Float > () };
-
-                if(ficha_tocada)
+                case ID(touch-moved):
                 {
-                    ficha_tocada->left_x = touch_location[0];
-                    ficha_tocada->bottom_y = touch_location[1];
-                }
+                    float x = *event[ID(x)].as< var::Float > ();
+                    float y = *event[ID(y)].as< var::Float > ();
 
-                break;
-            }
-
-            case ID(touch-ended):
-
-            {
-                // Se determina qué opción se ha dejado de tocar la última y se actúa como corresponda:
-
-                Point2f touch_location = { *event[ID(x)].as< var::Float > (), *event[ID(y)].as< var::Float > () };
-
-                for(auto casilla : casillas)
-                {
-                    if(casilla.contains(touch_location[0],touch_location[1]))
+                    if(ficha_tocada)
                     {
-                        casilla.ficha = ficha_tocada;
+                        ficha_tocada->left_x = x - ficha_tocada->anchoXalto/2;
+                        ficha_tocada->bottom_y = y - ficha_tocada->anchoXalto/2;
                     }
+                    break;
                 }
 
-                break;
+                case ID(touch-ended):
+                {
+                    float x = *event[ID(x)].as< var::Float > ();
+                    float y = *event[ID(y)].as< var::Float > ();
+
+                    if(ficha_tocada)
+                    {
+                        for ( auto &casilla : casillas)
+                        {
+                            if(casilla.contains(x, y))
+                            {
+                                casilla.ficha = ficha_tocada;
+                                ficha_tocada->colocada = true;
+                                fichas_colocadas++;
+
+                                /* no funciona
+
+                                 if(fichas_colocadas = 6)
+                                {
+                                    bool error = false;
+
+                                    for(int i = 0; i < fichas_colocadas; i++)
+                                    {
+                                        if(casillas[i].ficha->r != colores[i].r || casillas[i].ficha->g != colores[i].g || casillas[i].ficha->b != colores[i].b)
+                                        {
+                                            error = true;
+                                        }
+                                    }
+
+                                    if(error)
+                                    {
+                                        int i = 0;
+                                        for( auto &ficha : fichas)
+                                        {
+                                            ficha.left_x = fichasX[i];
+                                            ficha.bottom_y = fichasY[1];
+                                            ficha.colocada = false;
+                                            i++;
+                                        }
+
+                                        i = 0;
+                                        for ( auto &casilla : casillas)
+                                        {
+                                            casilla.ficha = nullptr;
+                                        }
+
+                                        fichas_colocadas = 0;
+                                    } else
+                                    {
+                                        win_condition = true;
+                                        state = GAME_FINISHED;
+                                    }
+                                }
+
+                                */
+
+
+                            }
+                        }
+                        ficha_tocada = nullptr;
+                    }
+                    break;
+                }
+
             }
         }
     }
@@ -217,13 +255,25 @@ namespace example
 
                     for( auto ficha : fichas)
                     {
-                        ficha.render(canvas);
+                        if(!ficha.colocada)
+                        {
+                            ficha.render(canvas);
+                        }
+
                     }
 
                     for( auto casilla : casillas)
                     {
                         casilla.render(canvas);
                     }
+                }
+            }
+
+            if(state == GAME_FINISHED)
+            {
+                if (canvas)
+                {
+
                 }
             }
         }
@@ -262,7 +312,36 @@ namespace example
 
 //--------------------------------------------------------------------------------------------------
 
+    void Sample_Scene::randomRNG(Ficha &ficha)
+    {
 
+
+        float r_start = float(rand() % 255) / 255.f;
+        float g_start = float(rand() % 255) / 255.f;
+        float b_start = float(rand() % 255) / 255.f;
+
+        float r_end = float(rand() % 255) / 255.f;
+        float g_end = float(rand() % 255) / 255.f;
+        float b_end = float(rand() % 255) / 255.f;
+
+        float r_step = (r_end - r_start)/ float (fichas.size());
+        float g_step = (g_end - g_start)/ float (fichas.size());
+        float b_step = (b_end - b_start)/ float (fichas.size());
+
+        for ( auto &ficha : fichas)
+        {
+            ficha.r = r_start;
+            r_start +=r_step;
+
+            ficha.g = g_start;
+            g_start += g_step;
+
+            ficha.b = b_start;
+            b_start+=b_step;
+
+            colores.push_back({ficha.r, ficha.g, ficha.b});
+        }
+    }
 
 
 }
