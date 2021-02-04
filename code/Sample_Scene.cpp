@@ -59,6 +59,7 @@ namespace example
             fichas[i].left_x = fichasX[i];
             fichas[i].bottom_y = fichasY[1];
             fichas[i].colocada = false;
+            fichas[i].anchoXalto = 128;
         }
 
         randomRNG(fichas[0]);
@@ -85,7 +86,7 @@ namespace example
         {
             casillas[i].left_x = fichasX[i];
             casillas[i].bottom_y = fichasY[0];
-
+            casillas[i].anchoXalto = 128;
             casillas[i].ficha = nullptr;
         }
 
@@ -94,12 +95,22 @@ namespace example
             cajas.push_back(&casilla);
         }
 
+        Boton reset;
+        reset.left_x = 10;
+        reset.bottom_y = canvas_height/2;
+        reset.ancho = 80;
+        reset.alto = 80;
+        reset.r = 1;
+        reset.g = 0;
+        reset.b = 0;
+        reset.id = 0;
+        botones.push_back(reset);
+
         fichas_colocadas = 0;
         ficha_tocada = nullptr;
         state = PLAYING;
         return true;
     }
-
 
 
 //--------------------------------------------------------------------------------------------------
@@ -134,7 +145,20 @@ namespace example
                         if(ficha.contains(x, y) && ficha.bottom_y == fichasY[1])
                         {
                             ficha_tocada = &ficha;
+                            ficha_tocada_posicion_inicial_x = ficha.left_x;
+                            ficha_tocada_posicion_inicial_y = ficha.bottom_y;
                             break;
+                        }
+                    }
+
+                    for( auto &boton : botones)
+                    {
+                        if(boton.contains(x, y))
+                        {
+                            if(boton.id == 0)
+                            {
+
+                            }
                         }
                     }
                     break;
@@ -168,9 +192,7 @@ namespace example
                                 ficha_tocada->colocada = true;
                                 fichas_colocadas++;
 
-                                /* no funciona
-
-                                 if(fichas_colocadas = 6)
+                                 if(fichas_colocadas == 6)
                                 {
                                     bool error = false;
 
@@ -200,20 +222,21 @@ namespace example
                                         }
 
                                         fichas_colocadas = 0;
-                                    } else
+                                    }
+                                    if(!error)
                                     {
                                         win_condition = true;
                                         state = GAME_FINISHED;
                                     }
                                 }
-
-                                */
-
-
-                            }
+                            } else
+                                {
+                                ficha_tocada->left_x = ficha_tocada_posicion_inicial_x;
+                                ficha_tocada->bottom_y = ficha_tocada_posicion_inicial_y;
+                                }
                         }
-                        ficha_tocada = nullptr;
                     }
+                    ficha_tocada = nullptr;
                     break;
                 }
 
@@ -266,6 +289,12 @@ namespace example
                     {
                         casilla.render(canvas);
                     }
+
+                    for( auto boton : botones)
+                    {
+                        boton.render(canvas);
+                    }
+
                 }
             }
 
