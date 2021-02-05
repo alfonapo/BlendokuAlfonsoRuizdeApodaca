@@ -95,17 +95,6 @@ namespace example
             cajas.push_back(&casilla);
         }
 
-        Boton reset;
-        reset.left_x = 10;
-        reset.bottom_y = canvas_height/2;
-        reset.ancho = 80;
-        reset.alto = 80;
-        reset.r = 1;
-        reset.g = 0;
-        reset.b = 0;
-        reset.id = 0;
-        botones.push_back(reset);
-
         fichas_colocadas = 0;
         ficha_tocada = nullptr;
         state = PLAYING;
@@ -150,17 +139,6 @@ namespace example
                             break;
                         }
                     }
-
-                    for( auto &boton : botones)
-                    {
-                        if(boton.contains(x, y))
-                        {
-                            if(boton.id == 0)
-                            {
-
-                            }
-                        }
-                    }
                     break;
                 }
 
@@ -192,48 +170,49 @@ namespace example
                                 ficha_tocada->colocada = true;
                                 fichas_colocadas++;
 
-                                 if(fichas_colocadas == 6)
-                                {
-                                    bool error = false;
-
-                                    for(int i = 0; i < fichas_colocadas; i++)
-                                    {
-                                        if(casillas[i].ficha->r != colores[i].r || casillas[i].ficha->g != colores[i].g || casillas[i].ficha->b != colores[i].b)
-                                        {
-                                            error = true;
-                                        }
-                                    }
-
-                                    if(error)
-                                    {
-                                        int i = 0;
-                                        for( auto &ficha : fichas)
-                                        {
-                                            ficha.left_x = fichasX[i];
-                                            ficha.bottom_y = fichasY[1];
-                                            ficha.colocada = false;
-                                            i++;
-                                        }
-
-                                        i = 0;
-                                        for ( auto &casilla : casillas)
-                                        {
-                                            casilla.ficha = nullptr;
-                                        }
-
-                                        fichas_colocadas = 0;
-                                    }
-                                    if(!error)
-                                    {
-                                        win_condition = true;
-                                        state = GAME_FINISHED;
-                                    }
-                                }
                             } else
                                 {
                                 ficha_tocada->left_x = ficha_tocada_posicion_inicial_x;
                                 ficha_tocada->bottom_y = ficha_tocada_posicion_inicial_y;
                                 }
+                        }
+
+                        if(fichas_colocadas == 6)
+                        {
+                            bool error = false;
+
+                            for(int i = 0; i < fichas_colocadas; i++)
+                            {
+                                if(casillas[i].ficha->r != colores[i].r || casillas[i].ficha->g != colores[i].g || casillas[i].ficha->b != colores[i].b)
+                                {
+                                    error = true;
+                                }
+                            }
+
+                            if(error)
+                            {
+                                int i = 0;
+                                for( auto &ficha : fichas)
+                                {
+                                    ficha.left_x = fichasX[i];
+                                    ficha.bottom_y = fichasY[1];
+                                    ficha.colocada = false;
+                                    i++;
+                                }
+
+                                i = 0;
+                                for ( auto &casilla : casillas)
+                                {
+                                    casilla.ficha = nullptr;
+                                }
+
+                                fichas_colocadas = 0;
+                            }
+                            if(!error)
+                            {
+                                win_condition = true;
+                                state = GAME_FINISHED;
+                            }
                         }
                     }
                     ficha_tocada = nullptr;
@@ -282,19 +261,12 @@ namespace example
                         {
                             ficha.render(canvas);
                         }
-
                     }
 
                     for( auto casilla : casillas)
                     {
                         casilla.render(canvas);
                     }
-
-                    for( auto boton : botones)
-                    {
-                        boton.render(canvas);
-                    }
-
                 }
             }
 
@@ -302,7 +274,7 @@ namespace example
             {
                 if (canvas)
                 {
-
+                    canvas->clear();
                 }
             }
         }

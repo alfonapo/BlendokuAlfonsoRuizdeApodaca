@@ -109,19 +109,6 @@ namespace example
             }
         };
 
-        struct Boton : public Caja
-        {
-            int id;
-            float ancho, alto;
-            float r, g, b;
-
-            void render (Canvas * canvas) override
-            {
-                canvas->set_color (r, g, b);
-                canvas->fill_rectangle ({left_x,bottom_y}, {ancho,alto});
-            }
-        };
-
         struct RGB
         {
             float r, g, b;
@@ -131,7 +118,6 @@ namespace example
         std::vector< Casilla > casillas;
         std::vector< Caja * > cajas;
         std::vector< RGB > colores;
-        std::vector< Boton > botones;
 
         Ficha * ficha_tocada;
         float   ficha_tocada_posicion_inicial_x;
