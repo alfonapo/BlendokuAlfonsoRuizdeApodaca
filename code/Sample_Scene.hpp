@@ -23,6 +23,7 @@
 #include <basics/Raster_Font>
 #include <basics/Texture_2D>
 
+
 #include "Sprite.hpp"
 
 
@@ -118,6 +119,7 @@ namespace example
         std::vector< Casilla > casillas;
         std::vector< Caja * > cajas;
         std::vector< RGB > colores;
+        std::vector< int > indices;
 
         Ficha * ficha_tocada;
         float   ficha_tocada_posicion_inicial_x;
@@ -126,6 +128,7 @@ namespace example
         const static int numero_de_cajas = 6;
 
         float       fichasX [numero_de_cajas] = {110, 287, 465, 643, 822, 1000};
+        float       fichasX2 [numero_de_cajas];
         float       fichasY [2] = {117, 478};
 
         unsigned    canvas_width;
@@ -164,6 +167,7 @@ namespace example
         void load ();
         void run  (float time);
         void randomRNG (Ficha &ficha);
+        void randomFichasX ();
 
     };
 

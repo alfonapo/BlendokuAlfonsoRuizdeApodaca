@@ -39,7 +39,7 @@ namespace example
     bool Sample_Scene::initialize () {
 
         //inicializo generador de numeros aleatorios
-        srand(time(nullptr));
+        srand(time(0));
 
         Ficha ficha1;
         fichas.push_back(ficha1);
@@ -54,9 +54,11 @@ namespace example
         Ficha ficha6;
         fichas.push_back(ficha6);
 
+        randomFichasX();
+
         for(int i = 0; i < numero_de_cajas; i++)
         {
-            fichas[i].left_x = fichasX[i];
+            fichas[i].left_x = fichasX2[i];
             fichas[i].bottom_y = fichasY[1];
             fichas[i].colocada = false;
             fichas[i].anchoXalto = 128;
@@ -275,6 +277,12 @@ namespace example
                 if (canvas)
                 {
                     canvas->clear();
+                    if(font)
+                    {
+                        Text_Layout winText (*font, L"Has Ganado");
+
+                        canvas->draw_text({canvas_width/2.f,canvas_height/2.f}, winText, CENTER);
+                    }
                 }
             }
         }
@@ -315,8 +323,6 @@ namespace example
 
     void Sample_Scene::randomRNG(Ficha &ficha)
     {
-
-
         float r_start = float(rand() % 255) / 255.f;
         float g_start = float(rand() % 255) / 255.f;
         float b_start = float(rand() % 255) / 255.f;
@@ -325,9 +331,66 @@ namespace example
         float g_end = float(rand() % 255) / 255.f;
         float b_end = float(rand() % 255) / 255.f;
 
+        if(r_end < r_start)
+        {
+            float sup_r = r_start;
+            r_start = r_end;
+            r_end = sup_r;
+        }
+
+        if(g_end < g_start)
+        {
+            float sup_g = g_start;
+            g_start = g_end;
+            g_end = sup_g;
+        }
+
+        if (b_end < b_start)
+        {
+            float sup_b = b_start;
+            b_start = b_end;
+            b_end = sup_b;
+        }
+
         float r_step = (r_end - r_start)/ float (fichas.size());
         float g_step = (g_end - g_start)/ float (fichas.size());
         float b_step = (b_end - b_start)/ float (fichas.size());
+
+        if(r_step < 0.3 && r_end <= 0.5)
+        {
+            r_end += 0.2;
+            r_step = (r_end - r_start)/ 6;
+        }
+
+        if(r_step < 0.3 && r_end >= 0.5)
+        {
+            r_start -= 0.2;
+            r_step = (r_end - r_start)/ 6;
+        }
+
+        if(g_step < 0.3 && g_end <= 0.5)
+        {
+            g_end += 0.2;
+            g_step = (g_end - g_start)/ 6;
+        }
+
+        if(g_step < 0.3 && g_end >= 0.5)
+        {
+            g_start -= 0.2;
+            g_step = (g_end - g_start)/ 6;
+        }
+
+        if(b_step < 0.3 && b_end <= 0.5)
+        {
+            b_end += 0.2;
+            b_step = (b_end - b_start)/ 6;
+        }
+
+        if(b_step < 0.3 && b_end >= 0.5)
+        {
+            b_start -= 0.2;
+            b_step = (b_end - b_start)/ 6;
+        }
 
         for ( auto &ficha : fichas)
         {
@@ -344,7 +407,55 @@ namespace example
         }
     }
 
+//--------------------------------------------------------------------------------------------------
 
+    void Sample_Scene::randomFichasX()
+    {
+        int nums[6] = {0,1,2,3,4,5};
+        bool indexUsado = true;
+        int indiceX1 = 0;
+
+        for(int i = 0; i < 6; i++)
+        {
+            indices.push_back(nums[i]);
+        }
+
+        do
+            {
+                int index = (rand() % 7) ;
+
+                for ( auto &indice : indices)
+                {
+                    if (indice == index)
+                    {
+                        indexUsado = false;
+                        indice = 0;
+                    }
+                }
+
+                if (!indexUsado)
+                {
+                    fichasX2[indiceX1] = fichasX[index];
+                    indiceX1++;
+                    indexUsado = true;
+                }
+
+
+            }while (indiceX1 < 6);
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
 }
 
 
