@@ -86,8 +86,6 @@ namespace example
             }
         };
 
-
-
         /* *
          * Casilla vacía que puede contener una ficha
          * */

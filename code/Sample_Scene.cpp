@@ -194,9 +194,11 @@ namespace example
                             if(error)
                             {
                                 int i = 0;
+
+                                randomFichasX();
                                 for( auto &ficha : fichas)
                                 {
-                                    ficha.left_x = fichasX[i];
+                                    ficha.left_x = fichasX2[i];
                                     ficha.bottom_y = fichasY[1];
                                     ficha.colocada = false;
                                     i++;
@@ -220,7 +222,18 @@ namespace example
                     ficha_tocada = nullptr;
                     break;
                 }
+            }
+        }
 
+        if (state == GAME_FINISHED)
+        {
+            switch (event.id)
+            {
+                case ID(touch-started):
+                {
+                    director.run_scene (shared_ptr< Scene >(new Sample_Scene));
+                    break;
+                }
             }
         }
     }
@@ -411,7 +424,7 @@ namespace example
 
     void Sample_Scene::randomFichasX()
     {
-        int nums[6] = {0,1,2,3,4,5};
+        int nums[6] = {1,2,3,4,5,6};
         bool indexUsado = true;
         int indiceX1 = 0;
 
@@ -422,7 +435,7 @@ namespace example
 
         do
             {
-                int index = (rand() % 7) ;
+                int index = rand() % 6 + 1 ;
 
                 for ( auto &indice : indices)
                 {
@@ -435,7 +448,7 @@ namespace example
 
                 if (!indexUsado)
                 {
-                    fichasX2[indiceX1] = fichasX[index];
+                    fichasX2[indiceX1] = fichasX[index - 1];
                     indiceX1++;
                     indexUsado = true;
                 }
