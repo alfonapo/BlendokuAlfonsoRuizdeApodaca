@@ -8,6 +8,9 @@
  * angel.rodriguez@esne.edu
  */
 
+#ifndef SAMPLE_HEADER
+#define SAMPLE_HEADER
+
 #include <memory>
 #include <thread>
 #include <map>
@@ -25,6 +28,7 @@
 
 
 #include "Sprite.hpp"
+#include "Caja.hpp"
 
 
 namespace example
@@ -170,3 +174,4 @@ namespace example
     };
 
 }
+#endif

@@ -8,6 +8,8 @@
  * angel.rodriguez@esne.edu
  */
 
+
+
 #include "Sample_Scene.hpp"
 #include <basics/Canvas>
 #include <basics/Director>
@@ -141,6 +143,27 @@ namespace example
                             break;
                         }
                     }
+
+                    for ( auto &casilla : casillas)
+                    {
+                        if(casilla.contains(x,y) && casilla.ficha)
+                        {
+                            float r = casilla.ficha->r;
+                            float g = casilla.ficha->g;
+                            float b = casilla.ficha->b;
+
+                            for ( auto &ficha : fichas)
+                            {
+                                if (ficha.r == r && ficha.g == g && ficha.b == b )
+                                {
+                                    ficha.colocada = false;
+                                }
+                            }
+
+                            casilla.ficha = nullptr;
+                        }
+                    }
+
                     break;
                 }
 
