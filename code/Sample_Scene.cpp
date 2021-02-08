@@ -54,6 +54,28 @@ namespace example
         Ficha ficha6;
         fichas.push_back(ficha6);
 
+        Ficha reiniciar;
+        reiniciar.left_x = canvas_width/3 + 80;
+        reiniciar.bottom_y = canvas_height/2;
+        reiniciar.colocada = false;
+        reiniciar.ancho = 256;
+        reiniciar.alto = 128;
+        reiniciar.r = 0;
+        reiniciar.g = 1;
+        reiniciar.b = 0;
+        opciones.push_back(reiniciar);
+
+        Ficha salir;
+        salir.left_x = canvas_width/3 + 80;
+        salir.bottom_y = canvas_height/3;
+        salir.colocada = false;
+        salir.ancho = 256;
+        salir.alto = 128;
+        salir.r = 1;
+        salir.g = 0;
+        salir.b = 0;
+        opciones.push_back(salir);
+
         randomFichasX();
 
         for(int i = 0; i < numero_de_cajas; i++)
@@ -255,7 +277,21 @@ namespace example
             {
                 case ID(touch-started):
                 {
-                    director.run_scene (shared_ptr< Scene >(new Sample_Scene));
+                    float x = *event[ID(x)].as< var::Float > ();
+                    float y = *event[ID(y)].as< var::Float > ();
+
+                    for( auto &opcion : opciones)
+                    {
+                        if(opcion.contains(x,y))
+                        {
+                            if(opcion.g == 1)
+                            {
+                                director.run_scene (shared_ptr< Scene >(new Sample_Scene));
+                            } else{
+                                director.stop();
+                            }
+                        }
+                    }
                     break;
                 }
             }
@@ -317,8 +353,17 @@ namespace example
                     if(font)
                     {
                         Text_Layout winText (*font, L"Has Ganado");
+                        Text_Layout reiniciar (*font, L"Otro nivel");
+                        Text_Layout salir (*font, L"Salir");
 
-                        canvas->draw_text({canvas_width/2.f,canvas_height/2.f}, winText, CENTER);
+                        for( auto &opcion : opciones)
+                        {
+                            opcion.render(canvas);
+                        }
+
+                        canvas->draw_text({canvas_width/2.f,canvas_height - 100}, winText, CENTER);
+                        canvas->draw_text({canvas_width/2 - 10,canvas_height/2 + 70}, reiniciar, CENTER);
+                        canvas->draw_text({canvas_width/2 - 10,(canvas_height/2 + 70) - 128}, salir, CENTER);
                     }
                 }
             }

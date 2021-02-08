@@ -115,6 +115,7 @@ namespace example
         };
 
         std::vector< Ficha   > fichas;
+        std::vector< Ficha   > opciones;
         std::vector< Casilla > casillas;
         std::vector< Caja * > cajas;
         std::vector< RGB > colores;
