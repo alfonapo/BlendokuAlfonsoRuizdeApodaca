@@ -27,10 +27,6 @@
 #include <basics/Texture_2D>
 
 
-#include "Sprite.hpp"
-#include "Caja.hpp"
-
-
 namespace example
 {
 
@@ -60,16 +56,17 @@ namespace example
          *
          * funcion contains comprueba si el punto x,y esta dentro de la caja
          * */
+    public:
         struct Caja
         {
             float left_x, bottom_y;
-            float anchoXalto;
+            float ancho, alto;
 
             virtual void render (Canvas * canvas) = 0;
 
             bool contains (float x, float y)
             {
-                return x > left_x && y > bottom_y && x < left_x + anchoXalto && y < bottom_y + anchoXalto;
+                return x > left_x && y > bottom_y && x < left_x + ancho && y < bottom_y + alto;
             }
         };
 
@@ -86,7 +83,7 @@ namespace example
             void render (Canvas * canvas) override
             {
                 canvas->set_color (r, g, b);
-                canvas->fill_rectangle ({left_x,bottom_y}, {anchoXalto,anchoXalto});
+                canvas->fill_rectangle ({left_x,bottom_y}, {ancho,alto});
             }
         };
 
@@ -108,7 +105,7 @@ namespace example
                 }
 
                 canvas->set_color (1, 1, 1);
-                canvas->draw_rectangle({left_x, bottom_y}, {anchoXalto, anchoXalto});
+                canvas->draw_rectangle({left_x, bottom_y}, {ancho, alto});
             }
         };
 
@@ -166,11 +163,8 @@ namespace example
 
     private:
 
-        void load ();
-        void run  (float time);
         void randomRNG (Ficha &ficha);
         void randomFichasX ();
-
     };
 
 }

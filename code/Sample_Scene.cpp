@@ -20,8 +20,6 @@
 #include <cstdlib>
 #include <ctime>
 
-
-
 using namespace basics;
 using namespace std;
 
@@ -63,7 +61,8 @@ namespace example
             fichas[i].left_x = fichasX2[i];
             fichas[i].bottom_y = fichasY[1];
             fichas[i].colocada = false;
-            fichas[i].anchoXalto = 128;
+            fichas[i].ancho = 128;
+            fichas[i].alto = 128;
         }
 
         randomRNG(fichas[0]);
@@ -90,7 +89,8 @@ namespace example
         {
             casillas[i].left_x = fichasX[i];
             casillas[i].bottom_y = fichasY[0];
-            casillas[i].anchoXalto = 128;
+            casillas[i].ancho = 128;
+            casillas[i].alto = 128;
             casillas[i].ficha = nullptr;
         }
 
@@ -157,6 +157,7 @@ namespace example
                                 if (ficha.r == r && ficha.g == g && ficha.b == b )
                                 {
                                     ficha.colocada = false;
+                                    fichas_colocadas--;
                                 }
                             }
 
@@ -174,8 +175,8 @@ namespace example
 
                     if(ficha_tocada)
                     {
-                        ficha_tocada->left_x = x - ficha_tocada->anchoXalto/2;
-                        ficha_tocada->bottom_y = y - ficha_tocada->anchoXalto/2;
+                        ficha_tocada->left_x = x - ficha_tocada->ancho/2;
+                        ficha_tocada->bottom_y = y - ficha_tocada->alto/2;
                     }
                     break;
                 }
@@ -324,37 +325,6 @@ namespace example
         }
     }
 
-
-//--------------------------------------------------------------------------------------------------
-
-    void Sample_Scene::load ()
-    {
-        /*
-         if (!suspended)
-        {
-            Graphics_Context::Accessor context = director.lock_graphics_context ();
-
-            if (context)
-            {
-                texture = Texture_2D::create (ID(test), context, "test.png");
-
-                if (texture)
-                {
-                    context->add (texture);
-                    state = RUNNING;
-                }
-            }
-        }
-         */
-
-    }
-
-//--------------------------------------------------------------------------------------------------
-
-    void Sample_Scene::run (float )
-    {
-    }
-
 //--------------------------------------------------------------------------------------------------
 
     void Sample_Scene::randomRNG(Ficha &ficha)
@@ -476,21 +446,7 @@ namespace example
                     indexUsado = true;
                 }
 
-
             }while (indiceX1 < 6);
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }
 

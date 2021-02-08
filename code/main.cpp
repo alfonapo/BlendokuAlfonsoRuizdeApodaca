@@ -18,6 +18,8 @@
 #include <basics/opengles/OpenGL_ES2>
 
 #include "Sample_Scene.hpp"
+#include "Menu_Scene.hpp"
+#include "Menu_Scene.cpp"
 
 using namespace basics;
 using namespace example;
@@ -31,7 +33,7 @@ int main ()
 
     // Se crea una escena y se inicia mediante el Director:
 
-    director.run_scene (shared_ptr< Scene >(new Sample_Scene));
+    director.run_scene (shared_ptr< Scene >(new Menu_Scene));
 
     return 0;
 }
