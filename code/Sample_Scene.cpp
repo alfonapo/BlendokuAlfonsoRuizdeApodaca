@@ -1,11 +1,11 @@
 /*
  * SAMPLE SCENE
- * Copyright © 2018+ Ángel Rodríguez Ballesteros
+ * Copyright © 2021+ Alfonso Ruiz de Apodaca Caparrós
  *
  * Distributed under the Boost Software License, version  1.0
  * See documents/LICENSE.TXT or www.boost.org/LICENSE_1_0.txt
  *
- * angel.rodriguez@esne.edu
+ * alfon.rda@gmail.com
  */
 
 
@@ -41,6 +41,7 @@ namespace example
         //inicializo generador de numeros aleatorios
         srand(time(0));
 
+        //fichas y guardarlas en sus vectores
         Ficha ficha1;
         fichas.push_back(ficha1);
         Ficha ficha2;
@@ -76,8 +77,10 @@ namespace example
         salir.b = 0;
         opciones.push_back(salir);
 
+        //desordena las fichas
         randomFichasX();
 
+        //propiedades de las fichas
         for(int i = 0; i < numero_de_cajas; i++)
         {
             fichas[i].left_x = fichasX2[i];
@@ -87,13 +90,15 @@ namespace example
             fichas[i].alto = 128;
         }
 
-        randomRNG(fichas[0]);
+        //colores de las fichas
+        randomRNG();
 
         for(auto ficha: fichas)
         {
             cajas.push_back(&ficha);
         }
 
+        //casillas y guardarlas en su vectore
         Casilla casilla1;
         casillas.push_back(casilla1);
         Casilla casilla2;
@@ -107,6 +112,7 @@ namespace example
         Casilla casilla6;
         casillas.push_back(casilla6);
 
+        //propiedades de las casillas
         for(int i = 0; i < numero_de_cajas; i++)
         {
             casillas[i].left_x = fichasX[i];
@@ -155,6 +161,7 @@ namespace example
                     float x = *event[ID(x)].as< var::Float > ();
                     float y = *event[ID(y)].as< var::Float > ();
 
+                    //si toca en una ficha de la linea de arriba se guarda la ficha tocada y su posicion
                     for( auto &ficha : fichas)
                     {
                         if(ficha.contains(x, y) && ficha.bottom_y == fichasY[1])
@@ -166,6 +173,7 @@ namespace example
                         }
                     }
 
+                    //si toca en una casilla que tiene ficha, elimina su ficha y enseña la de arriba
                     for ( auto &casilla : casillas)
                     {
                         if(casilla.contains(x,y) && casilla.ficha)
@@ -195,6 +203,7 @@ namespace example
                     float x = *event[ID(x)].as< var::Float > ();
                     float y = *event[ID(y)].as< var::Float > ();
 
+                    // si hay una ficha tocada, la arrastra (modificado para que se arrastre desde el centro)
                     if(ficha_tocada)
                     {
                         ficha_tocada->left_x = x - ficha_tocada->ancho/2;
@@ -210,15 +219,18 @@ namespace example
 
                     if(ficha_tocada)
                     {
+                        //si se deja la ficha sobre una casilla que no tenga ya ficha, se guarda la ficha en el puntero de la casilla
                         for ( auto &casilla : casillas)
                         {
-                            if(casilla.contains(x, y))
+                            if(casilla.contains(x, y) && casilla.ficha == nullptr)
                             {
                                 casilla.ficha = ficha_tocada;
                                 ficha_tocada->colocada = true;
                                 fichas_colocadas++;
 
-                            } else
+                            }
+                            //si no, la devuelve a su posicion inicial
+                            else
                                 {
                                 ficha_tocada->left_x = ficha_tocada_posicion_inicial_x;
                                 ficha_tocada->bottom_y = ficha_tocada_posicion_inicial_y;
@@ -229,6 +241,7 @@ namespace example
                         {
                             bool error = false;
 
+                            //busca algun error en la fila de casillas
                             for(int i = 0; i < fichas_colocadas; i++)
                             {
                                 if(casillas[i].ficha->r != colores[i].r || casillas[i].ficha->g != colores[i].g || casillas[i].ficha->b != colores[i].b)
@@ -237,6 +250,7 @@ namespace example
                                 }
                             }
 
+                            //si lo hay, desordena las fichas otra vez y limpia los punteros de las casillas
                             if(error)
                             {
                                 int i = 0;
@@ -258,6 +272,8 @@ namespace example
 
                                 fichas_colocadas = 0;
                             }
+
+                            //si no lo hay, cambia de estado a game finished
                             if(!error)
                             {
                                 win_condition = true;
@@ -280,6 +296,7 @@ namespace example
                     float x = *event[ID(x)].as< var::Float > ();
                     float y = *event[ID(y)].as< var::Float > ();
 
+                    //menu de fin de juego
                     for( auto &opcion : opciones)
                     {
                         if(opcion.contains(x,y))
@@ -293,6 +310,7 @@ namespace example
                         }
                     }
                     break;
+
                 }
             }
         }
@@ -325,6 +343,7 @@ namespace example
                 canvas = Canvas::create(ID(canvas), context, {{canvas_width, canvas_height}});
             }
 
+            //pinta las fichas y las casillas
             if(state == PLAYING)
             {
                 if (canvas) {
@@ -345,6 +364,7 @@ namespace example
                 }
             }
 
+            //pinta el menu de fin de juego
             if(state == GAME_FINISHED)
             {
                 if (canvas)
@@ -372,30 +392,34 @@ namespace example
 
 //--------------------------------------------------------------------------------------------------
 
-    void Sample_Scene::randomRNG(Ficha &ficha)
+    /* *
+     * Genera un gradiante de colores para las fichas
+     * */
+    void Sample_Scene::randomRNG()
     {
+        //Inicio del gradiante para cada color
         float r_start = float(rand() % 255) / 255.f;
         float g_start = float(rand() % 255) / 255.f;
         float b_start = float(rand() % 255) / 255.f;
 
+        //Fin del graciante para cada color
         float r_end = float(rand() % 255) / 255.f;
         float g_end = float(rand() % 255) / 255.f;
         float b_end = float(rand() % 255) / 255.f;
 
+        //Los starts son menores que los los ends
         if(r_end < r_start)
         {
             float sup_r = r_start;
             r_start = r_end;
             r_end = sup_r;
         }
-
         if(g_end < g_start)
         {
             float sup_g = g_start;
             g_start = g_end;
             g_end = sup_g;
         }
-
         if (b_end < b_start)
         {
             float sup_b = b_start;
@@ -403,10 +427,12 @@ namespace example
             b_end = sup_b;
         }
 
+        //Pasos intermedios para sumarlos a cada ficha
         float r_step = (r_end - r_start)/ float (fichas.size());
         float g_step = (g_end - g_start)/ float (fichas.size());
         float b_step = (b_end - b_start)/ float (fichas.size());
 
+        //Si salen muy pegados, amplia la diferencia para que no sean demasiado parecidos los colores
         if(r_step < 0.3 && r_end <= 0.5)
         {
             r_end += 0.2;
@@ -443,6 +469,7 @@ namespace example
             b_step = (b_end - b_start)/ 6;
         }
 
+        //asigna los colores a las fichas sumandole step al start cada vuelta. guarda los colores en el vector de colores
         for ( auto &ficha : fichas)
         {
             ficha.r = r_start;
@@ -460,6 +487,9 @@ namespace example
 
 //--------------------------------------------------------------------------------------------------
 
+    /* *
+     * Desordena el array de posiciones de las fichas
+     * */
     void Sample_Scene::randomFichasX()
     {
         int nums[6] = {1,2,3,4,5,6};

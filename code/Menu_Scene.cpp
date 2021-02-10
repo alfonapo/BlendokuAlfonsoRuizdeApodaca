@@ -1,13 +1,12 @@
 /*
- * SAMPLE SCENE
- * Copyright © 2018+ Ángel Rodríguez Ballesteros
+ * MENU SCENE
+ * Copyright © 2021+ Alfonso Ruiz de Apodaca Caparrós
  *
  * Distributed under the Boost Software License, version  1.0
  * See documents/LICENSE.TXT or www.boost.org/LICENSE_1_0.txt
  *
- * angel.rodriguez@esne.edu
+ * alfon.rda@gmail.com
  */
-
 
 #include "Menu_Scene.hpp"
 
@@ -36,6 +35,9 @@ namespace example
 
     bool Menu_Scene::initialize ()
     {
+
+        //crea las fichas y les asigna sus propiedades
+
         Sample_Scene::Ficha jugar;
         jugar.left_x = canvas_width/3 + 80;
         jugar.bottom_y = canvas_height/2;
@@ -86,6 +88,7 @@ namespace example
                 float x = *event[ID(x)].as< var::Float > ();
                 float y = *event[ID(y)].as< var::Float > ();
 
+                //opciones del menu
                 for( auto &opcion : opciones)
                 {
                     if(opcion.contains(x,y))
@@ -131,6 +134,7 @@ namespace example
                 canvas = Canvas::create(ID(canvas), context, {{canvas_width, canvas_height}});
             }
 
+            //pinta el menu
             if (canvas)
             {
                 canvas->clear();
@@ -149,7 +153,6 @@ namespace example
                     canvas->draw_text({canvas_width/2 - 10,(canvas_height/2 + 70) - 128}, salirTxt, CENTER);
                 }
             }
-
         }
     }
 }

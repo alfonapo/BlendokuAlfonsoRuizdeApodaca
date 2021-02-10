@@ -1,11 +1,11 @@
 /*
  * SAMPLE SCENE
- * Copyright © 2018+ Ángel Rodríguez Ballesteros
+ * Copyright © 2021+ Alfonso Ruiz de Apodaca Caparrós
  *
  * Distributed under the Boost Software License, version  1.0
  * See documents/LICENSE.TXT or www.boost.org/LICENSE_1_0.txt
  *
- * angel.rodriguez@esne.edu
+ * alfon.rda@gmail.com
  */
 
 #ifndef SAMPLE_HEADER
@@ -88,7 +88,7 @@ namespace example
         };
 
         /* *
-         * Casilla vacía que puede contener una ficha
+         * Casilla vacía que puede contener un puntero a una ficha (si lo tiene se pinta)
          * */
         struct Casilla : public Caja
         {
@@ -109,6 +109,9 @@ namespace example
             }
         };
 
+        /* *
+         * Color con r,g,b
+         * */
         struct RGB
         {
             float r, g, b;
@@ -164,7 +167,7 @@ namespace example
 
     private:
 
-        void randomRNG (Ficha &ficha);
+        void randomRNG ();
         void randomFichasX ();
     };
 
