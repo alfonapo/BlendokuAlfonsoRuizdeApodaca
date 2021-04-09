@@ -192,6 +192,7 @@ namespace example
                                 }
 
                                 i = 0;
+
                                 for ( auto &casilla : casillas)
                                 {
                                     casilla.ficha = nullptr;
