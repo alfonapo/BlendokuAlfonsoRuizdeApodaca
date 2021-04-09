@@ -38,6 +38,13 @@ namespace example
         typedef std::shared_ptr< basics::Texture_2D > Texture_Handle;
         typedef std::unique_ptr< basics::Raster_Font > Font_Handle;
 
+        enum state
+        {
+            MenuPpal,
+            Intro,
+            Ayuda
+        };
+
         std::vector < Sample_Scene::Ficha > opciones;
 
         unsigned    canvas_width;
@@ -46,6 +53,7 @@ namespace example
 
     private:
 
+        state                 state;
         bool                  suspended;
         Font_Handle           font;
 

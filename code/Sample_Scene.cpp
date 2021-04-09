@@ -41,95 +41,13 @@ namespace example
         //inicializo generador de numeros aleatorios
         srand(time(0));
 
-        //fichas y guardarlas en sus vectores
-        Ficha ficha1;
-        fichas.push_back(ficha1);
-        Ficha ficha2;
-        fichas.push_back(ficha2);
-        Ficha ficha3;
-        fichas.push_back(ficha3);
-        Ficha ficha4;
-        fichas.push_back(ficha4);
-        Ficha ficha5;
-        fichas.push_back(ficha5);
-        Ficha ficha6;
-        fichas.push_back(ficha6);
-
-        Ficha reiniciar;
-        reiniciar.left_x = canvas_width/3 + 80;
-        reiniciar.bottom_y = canvas_height/2;
-        reiniciar.colocada = false;
-        reiniciar.ancho = 256;
-        reiniciar.alto = 128;
-        reiniciar.r = 0;
-        reiniciar.g = 1;
-        reiniciar.b = 0;
-        opciones.push_back(reiniciar);
-
-        Ficha salir;
-        salir.left_x = canvas_width/3 + 80;
-        salir.bottom_y = canvas_height/3;
-        salir.colocada = false;
-        salir.ancho = 256;
-        salir.alto = 128;
-        salir.r = 1;
-        salir.g = 0;
-        salir.b = 0;
-        opciones.push_back(salir);
-
-        //desordena las fichas
-        randomFichasX();
-
-        //propiedades de las fichas
-        for(int i = 0; i < numero_de_cajas; i++)
-        {
-            fichas[i].left_x = fichasX2[i];
-            fichas[i].bottom_y = fichasY[1];
-            fichas[i].colocada = false;
-            fichas[i].ancho = 128;
-            fichas[i].alto = 128;
-        }
-
-        //colores de las fichas
-        randomRNG();
-
-        for(auto ficha: fichas)
-        {
-            cajas.push_back(&ficha);
-        }
-
-        //casillas y guardarlas en su vectore
-        Casilla casilla1;
-        casillas.push_back(casilla1);
-        Casilla casilla2;
-        casillas.push_back(casilla2);
-        Casilla casilla3;
-        casillas.push_back(casilla3);
-        Casilla casilla4;
-        casillas.push_back(casilla4);
-        Casilla casilla5;
-        casillas.push_back(casilla5);
-        Casilla casilla6;
-        casillas.push_back(casilla6);
-
-        //propiedades de las casillas
-        for(int i = 0; i < numero_de_cajas; i++)
-        {
-            casillas[i].left_x = fichasX[i];
-            casillas[i].bottom_y = fichasY[0];
-            casillas[i].ancho = 128;
-            casillas[i].alto = 128;
-            casillas[i].ficha = nullptr;
-        }
-
-        for(auto casilla : casillas)
-        {
-            cajas.push_back(&casilla);
-        }
+        fichasInit();
+        casillasInit();
 
         fichas_colocadas = 0;
-        ficha_tocada = nullptr;
-        state = PLAYING;
+        ficha_tocada     = nullptr;
+        pause            = false;
+
         return true;
     }
 
@@ -161,6 +79,11 @@ namespace example
                     float x = *event[ID(x)].as< var::Float > ();
                     float y = *event[ID(y)].as< var::Float > ();
 
+                    if(pause)
+                    {
+                        pause = false;
+                    }
+
                     //si toca en una ficha de la linea de arriba se guarda la ficha tocada y su posicion
                     for( auto &ficha : fichas)
                     {
@@ -170,6 +93,11 @@ namespace example
                             ficha_tocada_posicion_inicial_x = ficha.left_x;
                             ficha_tocada_posicion_inicial_y = ficha.bottom_y;
                             break;
+                        }
+
+                        if(ficha.contains(x,y) && ficha.alto == 100)
+                        {
+                            pause = true;
                         }
                     }
 
@@ -194,7 +122,6 @@ namespace example
                             casilla.ficha = nullptr;
                         }
                     }
-
                     break;
                 }
 
@@ -310,7 +237,6 @@ namespace example
                         }
                     }
                     break;
-
                 }
             }
         }
@@ -327,6 +253,22 @@ namespace example
             if (context)
             {
                 font.reset (new Raster_Font("fonts/Fuente.fnt", context));
+
+                texture = Texture_2D::create (ID(test), context, "pause.png");
+
+                if(texture)
+                {
+                    context->add(texture);
+
+                    for( auto ficha : fichas)
+                    {
+                        if (ficha.ancho == 100)
+                        {
+                            ficha.texture = texture;
+                        }
+                    }
+                    state = PLAYING;
+                }
             }
         }
     }
@@ -349,17 +291,38 @@ namespace example
                 if (canvas) {
                     canvas->clear();
 
-                    for( auto ficha : fichas)
+                    if(!pause)
                     {
-                        if(!ficha.colocada)
+                        for( auto ficha : fichas)
                         {
-                            ficha.render(canvas);
+                            if(!ficha.colocada)
+                            {
+                                ficha.render(canvas);
+                            }
                         }
-                    }
 
-                    for( auto casilla : casillas)
-                    {
-                        casilla.render(canvas);
+                        for( auto casilla : casillas)
+                        {
+                            casilla.render(canvas);
+                        }
+
+                        canvas->fill_rectangle ({ 1150, canvas_height/2 }, { 100, 100 }, texture.get ());
+                    }else{
+                        if(font)
+                        {
+                            Text_Layout continuar (*font, L"Continuar");
+                            Text_Layout back2Menu (*font, L"Volver al menu");
+                            Text_Layout salir2 (*font, L"Salir");
+
+                            for( auto &opcion : opciones)
+                            {
+                                opcion.render(canvas);
+                            }
+
+                            canvas->draw_text({canvas_width/2.f,canvas_height - 100}, continuar, CENTER);
+                            canvas->draw_text({canvas_width/2 - 10,canvas_height/2 + 70}, back2Menu, CENTER);
+                            canvas->draw_text({canvas_width/2 - 10,(canvas_height/2 + 70) - 128}, salir2, CENTER);
+                        }
                     }
                 }
             }
@@ -472,16 +435,19 @@ namespace example
         //asigna los colores a las fichas sumandole step al start cada vuelta. guarda los colores en el vector de colores
         for ( auto &ficha : fichas)
         {
-            ficha.r = r_start;
-            r_start +=r_step;
+            if(ficha.alto != 100)
+            {
+                ficha.r = r_start;
+                r_start +=r_step;
 
-            ficha.g = g_start;
-            g_start += g_step;
+                ficha.g = g_start;
+                g_start += g_step;
 
-            ficha.b = b_start;
-            b_start+=b_step;
+                ficha.b = b_start;
+                b_start+=b_step;
 
-            colores.push_back({ficha.r, ficha.g, ficha.b});
+                colores.push_back({ficha.r, ficha.g, ficha.b});
+            }
         }
     }
 
@@ -523,6 +489,113 @@ namespace example
 
             }while (indiceX1 < 6);
     }
+
+    //--------------------------------------------------------------------------------------------------
+
+    void Sample_Scene::fichasInit()
+    {
+        Ficha ficha1;
+        fichas.push_back(ficha1);
+        Ficha ficha2;
+        fichas.push_back(ficha2);
+        Ficha ficha3;
+        fichas.push_back(ficha3);
+        Ficha ficha4;
+        fichas.push_back(ficha4);
+        Ficha ficha5;
+        fichas.push_back(ficha5);
+        Ficha ficha6;
+        fichas.push_back(ficha6);
+
+        Ficha reiniciar;
+        reiniciar.left_x = canvas_width/3 + 80;
+        reiniciar.bottom_y = canvas_height/2;
+        reiniciar.colocada = false;
+        reiniciar.ancho = 256;
+        reiniciar.alto = 128;
+        reiniciar.r = 0;
+        reiniciar.g = 1;
+        reiniciar.b = 0;
+        opciones.push_back(reiniciar);
+
+        Ficha salir;
+        salir.left_x = canvas_width/3 + 80;
+        salir.bottom_y = canvas_height/3;
+        salir.colocada = false;
+        salir.ancho = 256;
+        salir.alto = 128;
+        salir.r = 1;
+        salir.g = 0;
+        salir.b = 0;
+        opciones.push_back(salir);
+
+        Ficha pause;
+        pause.left_x = 1150;
+        pause.bottom_y = canvas_height/2 - 50;
+        pause.colocada = false;
+        pause.ancho = 100;
+        pause.alto = 100;
+        pause.r = 0;
+        pause.g = 0;
+        pause.b = 0;
+        fichas.push_back(pause);
+
+        //desordena las fichas
+        randomFichasX();
+
+        //propiedades de las fichas
+        for(int i = 0; i < numero_de_cajas; i++)
+        {
+            fichas[i].left_x = fichasX2[i];
+            fichas[i].bottom_y = fichasY[1];
+            fichas[i].colocada = false;
+            fichas[i].ancho = 128;
+            fichas[i].alto = 128;
+        }
+
+        //colores de las fichas
+        randomRNG();
+
+        for(auto ficha: fichas)
+        {
+            cajas.push_back(&ficha);
+        }
+    }
+
+    //--------------------------------------------------------------------------------------------------
+
+    void Sample_Scene::casillasInit()
+    {
+        //casillas y guardarlas en su vectore
+        Casilla casilla1;
+        casillas.push_back(casilla1);
+        Casilla casilla2;
+        casillas.push_back(casilla2);
+        Casilla casilla3;
+        casillas.push_back(casilla3);
+        Casilla casilla4;
+        casillas.push_back(casilla4);
+        Casilla casilla5;
+        casillas.push_back(casilla5);
+        Casilla casilla6;
+        casillas.push_back(casilla6);
+
+        //propiedades de las casillas
+        for(int i = 0; i < numero_de_cajas; i++)
+        {
+            casillas[i].left_x = fichasX[i];
+            casillas[i].bottom_y = fichasY[0];
+            casillas[i].ancho = 128;
+            casillas[i].alto = 128;
+            casillas[i].ficha = nullptr;
+        }
+
+        for(auto casilla : casillas)
+        {
+            cajas.push_back(&casilla);
+        }
+    }
+
 }
 
 

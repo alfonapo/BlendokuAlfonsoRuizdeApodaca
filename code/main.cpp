@@ -19,7 +19,7 @@
 
 #include "Sample_Scene.hpp"
 #include "Menu_Scene.hpp"
-#include "Menu_Scene.cpp"
+
 
 using namespace basics;
 using namespace example;

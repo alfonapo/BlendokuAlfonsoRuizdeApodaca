@@ -47,16 +47,16 @@ namespace example
         {
             UNINITIALIZED,
             PLAYING,
+            PAUSE,
             GAME_FINISHED,
         };
 
-
+    public:
         /* *
          * contenedor para las fichas y las casillas
          *
-         * funcion contains comprueba si el punto x,y esta dentro de la caja
+         * funcion contains comprueba si el punto x,y (parámetros) esta dentro de la caja
          * */
-    public:
         struct Caja
         {
             float left_x, bottom_y;
@@ -70,7 +70,6 @@ namespace example
             }
         };
 
-
         /* *
          * ficha coloreada (r,g,b)
          * */
@@ -80,10 +79,17 @@ namespace example
 
             bool colocada;
 
+            Texture_Handle texture;
+
             void render (Canvas * canvas) override
             {
                 canvas->set_color (r, g, b);
-                canvas->fill_rectangle ({left_x,bottom_y}, {ancho,alto});
+                if(texture)
+                {
+                    canvas->fill_rectangle ({left_x,bottom_y}, {ancho,alto}, texture.get());
+                }else{
+                    canvas->fill_rectangle ({left_x,bottom_y}, {ancho,alto});
+                }
             }
         };
 
@@ -139,6 +145,7 @@ namespace example
 
         int         fichas_colocadas;
         bool        win_condition;
+        bool        pause;
 
     private:
 
@@ -169,6 +176,8 @@ namespace example
 
         void randomRNG ();
         void randomFichasX ();
+        void fichasInit ();
+        void casillasInit ();
     };
 
 }

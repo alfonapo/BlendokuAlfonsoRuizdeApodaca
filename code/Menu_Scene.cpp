@@ -29,6 +29,7 @@ namespace example
         canvas_width  = 1280;
         canvas_height =  720;
         suspended = false;
+        state = Intro;
     }
 
 //--------------------------------------------------------------------------------------------------
@@ -40,7 +41,7 @@ namespace example
 
         Sample_Scene::Ficha jugar;
         jugar.left_x = canvas_width/3 + 80;
-        jugar.bottom_y = canvas_height/2;
+        jugar.bottom_y = canvas_height/1.7;
         jugar.colocada = false;
         jugar.ancho = 256;
         jugar.alto = 128;
@@ -51,7 +52,7 @@ namespace example
 
         Sample_Scene::Ficha salir;
         salir.left_x = canvas_width/3 + 80;
-        salir.bottom_y = canvas_height/3;
+        salir.bottom_y = canvas_height/2.4;
         salir.colocada = false;
         salir.ancho = 256;
         salir.alto = 128;
@@ -59,6 +60,17 @@ namespace example
         salir.g = 0;
         salir.b = 0.5;
         opciones.push_back(salir);
+
+        Sample_Scene::Ficha ayuda;
+        ayuda.left_x = canvas_width/3 + 80;
+        ayuda.bottom_y = canvas_height/4.2;
+        ayuda.colocada = false;
+        ayuda.ancho = 256;
+        ayuda.alto = 128;
+        ayuda.r = 0;
+        ayuda.g = 0;
+        ayuda.b = 0.3;
+        opciones.push_back(ayuda);
 
         return true;
     }
@@ -85,23 +97,34 @@ namespace example
         {
             case ID(touch-started):
             {
-                float x = *event[ID(x)].as< var::Float > ();
-                float y = *event[ID(y)].as< var::Float > ();
-
-                //opciones del menu
-                for( auto &opcion : opciones)
+                if(state == Intro)
                 {
-                    if(opcion.contains(x,y))
+                    state = MenuPpal;
+                }
+                else if(state == MenuPpal)
+                {
+                    float x = *event[ID(x)].as< var::Float > ();
+                    float y = *event[ID(y)].as< var::Float > ();
+
+                    //opciones del menu
+                    for( auto &opcion : opciones)
                     {
-                        if(opcion.b == 1)
+                        if(opcion.contains(x,y))
                         {
-                            director.run_scene (shared_ptr< Scene >(new Sample_Scene));
-                        } else{
-                            director.stop();
+                            if(opcion.b == 1)
+                            {
+                                director.run_scene (shared_ptr< Scene >(new Sample_Scene));
+                            } else if (opcion.b == 0.5){
+                                state = Ayuda;
+                            } else{
+                                director.stop();
+                            }
                         }
                     }
+                    break;
+                }else{
+                    state = MenuPpal;
                 }
-                break;
             }
         }
     }
@@ -137,20 +160,56 @@ namespace example
             //pinta el menu
             if (canvas)
             {
-                canvas->clear();
-
-                for( auto &opcion : opciones)
+                if(state == Intro)
                 {
-                    opcion.render(canvas);
+                    canvas->clear();
+
+                    if(font)
+                    {
+                        Text_Layout tituloTxt    (*font, L"Blendoku");
+                        Text_Layout continuarTxt (*font, L"Toca la pantalla para continuar...");
+
+                        canvas->draw_text({canvas_width/2 - 10,canvas_height/2 + 70},            tituloTxt, CENTER);
+                        canvas->draw_text({canvas_width/2 - 10,(canvas_height/2 + 70) - 128}, continuarTxt, CENTER);
+                    }
                 }
 
-                if(font)
+                if(state == MenuPpal)
                 {
-                    Text_Layout jugarTxt (*font, L"Jugar");
-                    Text_Layout salirTxt (*font, L"Salir");
+                    canvas->clear();
 
-                    canvas->draw_text({canvas_width/2 - 10,canvas_height/2 + 70}, jugarTxt, CENTER);
-                    canvas->draw_text({canvas_width/2 - 10,(canvas_height/2 + 70) - 128}, salirTxt, CENTER);
+                    for( auto &opcion : opciones)
+                    {
+                        opcion.render(canvas);
+                    }
+
+                    if(font)
+                    {
+                        Text_Layout jugarTxt (*font, L"Jugar");
+                        Text_Layout salirTxt (*font, L"Salir");
+                        Text_Layout ayudaTxt (*font, L"Ayuda");
+
+                        canvas->draw_text({canvas_width/2 - 10, canvas_height/2 + 130}, jugarTxt, CENTER);
+                        canvas->draw_text({canvas_width/2 - 10, canvas_height/2      }, ayudaTxt, CENTER);
+                        canvas->draw_text({canvas_width/2 - 10, canvas_height/2 - 125}, salirTxt, CENTER);
+                    }
+                }
+
+                if (state == Ayuda)
+                {
+                    canvas->clear();
+
+                    if(font)
+                    {
+                        Text_Layout ayudaTxt1 (*font, L"Coloca las fichas superiores en las casillas inferiores por orden de color,");
+                        Text_Layout ayudaTxt2 (*font, L"la más oscura tiene que quedar a la izquierda y la más clara a la derecha.");
+                        Text_Layout ayudaTxt3 (*font, L"Toca la pantalla para volver...");
+
+
+                        canvas->draw_text({canvas_width/2 - 10, canvas_height/2 + 130}, ayudaTxt1, CENTER);
+                        canvas->draw_text({canvas_width/2 - 10, canvas_height/2      }, ayudaTxt2, CENTER);
+                        canvas->draw_text({canvas_width/2 - 10, canvas_height/2 - 300}, ayudaTxt3, CENTER);
+                    }
                 }
             }
         }
