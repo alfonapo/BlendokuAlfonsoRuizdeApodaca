@@ -11,6 +11,7 @@
 
 
 #include "Sample_Scene.hpp"
+#include "Menu_Scene.hpp"
 #include <basics/Canvas>
 #include <basics/Director>
 #include <basics/Log>
@@ -27,8 +28,8 @@ namespace example
 {
     Sample_Scene::Sample_Scene()
     {
-        state     = UNINITIALIZED;
-        suspended = true;
+        state         = UNINITIALIZED;
+        suspended     = true;
         canvas_width  = 1280;
         canvas_height =  720;
 
@@ -38,15 +39,16 @@ namespace example
 
     bool Sample_Scene::initialize () {
 
-        //inicializo generador de numeros aleatorios
-        srand(time(0));
+        srand(time(nullptr));
 
+        //inicializa las fichas
         fichasInit();
+
+        //inicializa las casillas
         casillasInit();
 
         fichas_colocadas = 0;
         ficha_tocada     = nullptr;
-        pause            = false;
 
         return true;
     }
@@ -79,31 +81,27 @@ namespace example
                     float x = *event[ID(x)].as< var::Float > ();
                     float y = *event[ID(y)].as< var::Float > ();
 
-                    if(pause)
-                    {
-                        pause = false;
-                    }
-
-                    //si toca en una ficha de la linea de arriba se guarda la ficha tocada y su posicion
                     for( auto &ficha : fichas)
                     {
+                        //si toca en una ficha de la linea de arriba se guarda la ficha tocada y su posicion
                         if(ficha.contains(x, y) && ficha.bottom_y == fichasY[1])
                         {
-                            ficha_tocada = &ficha;
+                            ficha_tocada                    = &ficha;
                             ficha_tocada_posicion_inicial_x = ficha.left_x;
                             ficha_tocada_posicion_inicial_y = ficha.bottom_y;
                             break;
                         }
 
+                        //si toca el pause, se cambia el state a PAUSE
                         if(ficha.contains(x,y) && ficha.alto == 100)
                         {
-                            pause = true;
+                            state = PAUSE;
                         }
                     }
 
-                    //si toca en una casilla que tiene ficha, elimina su ficha y enseña la de arriba
                     for ( auto &casilla : casillas)
                     {
+                        //si toca en una casilla que tiene ficha, elimina su ficha y enseña la que le corresponde de la fila de arriba
                         if(casilla.contains(x,y) && casilla.ficha)
                         {
                             float r = casilla.ficha->r;
@@ -118,7 +116,6 @@ namespace example
                                     fichas_colocadas--;
                                 }
                             }
-
                             casilla.ficha = nullptr;
                         }
                     }
@@ -133,7 +130,7 @@ namespace example
                     // si hay una ficha tocada, la arrastra (modificado para que se arrastre desde el centro)
                     if(ficha_tocada)
                     {
-                        ficha_tocada->left_x = x - ficha_tocada->ancho/2;
+                        ficha_tocada->left_x   = x - ficha_tocada->ancho/2;
                         ficha_tocada->bottom_y = y - ficha_tocada->alto/2;
                     }
                     break;
@@ -146,22 +143,21 @@ namespace example
 
                     if(ficha_tocada)
                     {
-                        //si se deja la ficha sobre una casilla que no tenga ya ficha, se guarda la ficha en el puntero de la casilla
                         for ( auto &casilla : casillas)
                         {
+                            //si se deja la ficha sobre una casilla que no tenga ya ficha, se guarda la ficha en la casilla
                             if(casilla.contains(x, y) && casilla.ficha == nullptr)
                             {
-                                casilla.ficha = ficha_tocada;
+                                casilla.ficha          = ficha_tocada;
                                 ficha_tocada->colocada = true;
                                 fichas_colocadas++;
-
                             }
+
                             //si no, la devuelve a su posicion inicial
-                            else
-                                {
-                                ficha_tocada->left_x = ficha_tocada_posicion_inicial_x;
+                            else{
+                                ficha_tocada->left_x   = ficha_tocada_posicion_inicial_x;
                                 ficha_tocada->bottom_y = ficha_tocada_posicion_inicial_y;
-                                }
+                            }
                         }
 
                         if(fichas_colocadas == 6)
@@ -183,9 +179,10 @@ namespace example
                                 int i = 0;
 
                                 randomFichasX();
+
                                 for( auto &ficha : fichas)
                                 {
-                                    ficha.left_x = fichasX2[i];
+                                    ficha.left_x   = fichasX2[i];
                                     ficha.bottom_y = fichasY[1];
                                     ficha.colocada = false;
                                     i++;
@@ -204,12 +201,45 @@ namespace example
                             //si no lo hay, cambia de estado a game finished
                             if(!error)
                             {
-                                win_condition = true;
                                 state = GAME_FINISHED;
                             }
                         }
                     }
                     ficha_tocada = nullptr;
+                    break;
+                }
+            }
+        }
+
+        if (state == PAUSE)
+        {
+            switch (event.id)
+            {
+                case ID(touch-started):
+                {
+                    float x = *event[ID(x)].as< var::Float > ();
+                    float y = *event[ID(y)].as< var::Float > ();
+
+                    for ( auto &opcion : opciones)
+                    {
+                        //si toca la opcion salir
+                        if(opcion.contains(x,y) && opcion.r == 1)
+                        {
+                            director.stop();
+                        }
+
+                        //si toca la opcion continuar
+                        if(opcion.contains(x,y) && opcion.g == 1)
+                        {
+                            state = PLAYING;
+                        }
+
+                        //si toca la opcion volver al menu
+                        if(opcion.contains(x,y) && opcion.b == 1)
+                        {
+                            director.run_scene (shared_ptr< Scene >(new Menu_Scene));
+                        }
+                    }
                     break;
                 }
             }
@@ -224,15 +254,18 @@ namespace example
                     float x = *event[ID(x)].as< var::Float > ();
                     float y = *event[ID(y)].as< var::Float > ();
 
-                    //menu de fin de juego
-                    for( auto &opcion : opciones)
+                    for( auto &opcion : opciones2)
                     {
                         if(opcion.contains(x,y))
                         {
-                            if(opcion.g == 1)
+                            //si toca la opcion otro nivel
+                            if(opcion.r == 1)
                             {
                                 director.run_scene (shared_ptr< Scene >(new Sample_Scene));
-                            } else{
+                            }
+
+                            //si toca la opcion salir
+                            else{
                                 director.stop();
                             }
                         }
@@ -261,13 +294,6 @@ namespace example
                 {
                     context->add(texture);
 
-                    for( auto ficha : fichas)
-                    {
-                        if (ficha.ancho == 100)
-                        {
-                            ficha.texture = texture;
-                        }
-                    }
                     state = PLAYING;
                 }
             }
@@ -286,49 +312,56 @@ namespace example
                 canvas = Canvas::create(ID(canvas), context, {{canvas_width, canvas_height}});
             }
 
-            //pinta las fichas y las casillas
             if(state == PLAYING)
             {
                 if (canvas) {
                     canvas->clear();
 
-                    if(!pause)
+                    //pinta las fichas que no estan colocadas
+                    for( auto ficha : fichas)
                     {
-                        for( auto ficha : fichas)
+                        if(!ficha.colocada)
                         {
-                            if(!ficha.colocada)
-                            {
-                                ficha.render(canvas);
-                            }
+                            ficha.render(canvas);
+                        }
+                    }
+
+                    //pinta las casillas
+                    for( auto casilla : casillas)
+                    {
+                        casilla.render(canvas);
+                    }
+
+                    //pinta el boton de pause
+                    canvas->fill_rectangle ({ 1150, canvas_height/2 }, { 100, 100 }, texture.get ());
+                }
+            }
+
+            if(state == PAUSE)
+            {
+                if(canvas)
+                {
+                    canvas->clear();
+                    if(font)
+                    {
+                        Text_Layout continuar (*font, L"Continuar");
+                        Text_Layout back2Menu (*font, L"Volver al menu");
+                        Text_Layout salir2    (*font, L"Salir");
+
+                        //pinta las opciones del menu de pause
+                        for( auto &opcion : opciones)
+                        {
+                            opcion.render(canvas);
                         }
 
-                        for( auto casilla : casillas)
-                        {
-                            casilla.render(canvas);
-                        }
-
-                        canvas->fill_rectangle ({ 1150, canvas_height/2 }, { 100, 100 }, texture.get ());
-                    }else{
-                        if(font)
-                        {
-                            Text_Layout continuar (*font, L"Continuar");
-                            Text_Layout back2Menu (*font, L"Volver al menu");
-                            Text_Layout salir2 (*font, L"Salir");
-
-                            for( auto &opcion : opciones)
-                            {
-                                opcion.render(canvas);
-                            }
-
-                            canvas->draw_text({canvas_width/2.f,canvas_height - 100}, continuar, CENTER);
-                            canvas->draw_text({canvas_width/2 - 10,canvas_height/2 + 70}, back2Menu, CENTER);
-                            canvas->draw_text({canvas_width/2 - 10,(canvas_height/2 + 70) - 128}, salir2, CENTER);
-                        }
+                        //texto de las opciones
+                        canvas->draw_text({canvas_width/2 - 10, canvas_height/2 + 130}, continuar, CENTER);
+                        canvas->draw_text({canvas_width/2 - 10, canvas_height/2      }, back2Menu, CENTER);
+                        canvas->draw_text({canvas_width/2 - 10, canvas_height/2 - 125}, salir2,    CENTER);
                     }
                 }
             }
 
-            //pinta el menu de fin de juego
             if(state == GAME_FINISHED)
             {
                 if (canvas)
@@ -336,18 +369,20 @@ namespace example
                     canvas->clear();
                     if(font)
                     {
-                        Text_Layout winText (*font, L"Has Ganado");
+                        Text_Layout winText   (*font, L"Has Ganado");
                         Text_Layout reiniciar (*font, L"Otro nivel");
-                        Text_Layout salir (*font, L"Salir");
+                        Text_Layout salir     (*font, L"Salir");
 
-                        for( auto &opcion : opciones)
+                        //pinta las opciones del menu final
+                        for( auto &opcion : opciones2)
                         {
                             opcion.render(canvas);
                         }
 
-                        canvas->draw_text({canvas_width/2.f,canvas_height - 100}, winText, CENTER);
-                        canvas->draw_text({canvas_width/2 - 10,canvas_height/2 + 70}, reiniciar, CENTER);
-                        canvas->draw_text({canvas_width/2 - 10,(canvas_height/2 + 70) - 128}, salir, CENTER);
+                        //texto de las opciones
+                        canvas->draw_text({canvas_width/2     ,canvas_height - 100}         , winText  , CENTER);
+                        canvas->draw_text({canvas_width/2 - 10,canvas_height/2 + 70}        , reiniciar, CENTER);
+                        canvas->draw_text({canvas_width/2 - 10,(canvas_height/2 + 70) - 128}, salir    , CENTER);
                     }
                 }
             }
@@ -356,9 +391,7 @@ namespace example
 
 //--------------------------------------------------------------------------------------------------
 
-    /* *
-     * Genera un gradiante de colores para las fichas
-     * */
+    ///Genera un gradiante de colores para las fichas
     void Sample_Scene::randomRNG()
     {
         //Inicio del gradiante para cada color
@@ -366,29 +399,29 @@ namespace example
         float g_start = float(rand() % 255) / 255.f;
         float b_start = float(rand() % 255) / 255.f;
 
-        //Fin del graciante para cada color
+        //Fin del gradiante para cada color
         float r_end = float(rand() % 255) / 255.f;
         float g_end = float(rand() % 255) / 255.f;
         float b_end = float(rand() % 255) / 255.f;
 
-        //Los starts son menores que los los ends
+        //ordena los start y end de r, g y b
         if(r_end < r_start)
         {
             float sup_r = r_start;
-            r_start = r_end;
-            r_end = sup_r;
+            r_start     = r_end;
+            r_end       = sup_r;
         }
         if(g_end < g_start)
         {
             float sup_g = g_start;
-            g_start = g_end;
-            g_end = sup_g;
+            g_start     = g_end;
+            g_end       = sup_g;
         }
         if (b_end < b_start)
         {
             float sup_b = b_start;
-            b_start = b_end;
-            b_end = sup_b;
+            b_start     = b_end;
+            b_end       = sup_b;
         }
 
         //Pasos intermedios para sumarlos a cada ficha
@@ -402,35 +435,30 @@ namespace example
             r_end += 0.2;
             r_step = (r_end - r_start)/ 6;
         }
-
         if(r_step < 0.3 && r_end >= 0.5)
         {
             r_start -= 0.2;
-            r_step = (r_end - r_start)/ 6;
+            r_step   = (r_end - r_start)/ 6;
         }
-
         if(g_step < 0.3 && g_end <= 0.5)
         {
             g_end += 0.2;
             g_step = (g_end - g_start)/ 6;
         }
-
         if(g_step < 0.3 && g_end >= 0.5)
         {
             g_start -= 0.2;
-            g_step = (g_end - g_start)/ 6;
+            g_step   = (g_end - g_start)/ 6;
         }
-
         if(b_step < 0.3 && b_end <= 0.5)
         {
             b_end += 0.2;
             b_step = (b_end - b_start)/ 6;
         }
-
         if(b_step < 0.3 && b_end >= 0.5)
         {
             b_start -= 0.2;
-            b_step = (b_end - b_start)/ 6;
+            b_step   = (b_end - b_start)/ 6;
         }
 
         //asigna los colores a las fichas sumandole step al start cada vuelta. guarda los colores en el vector de colores
@@ -438,14 +466,14 @@ namespace example
         {
             if(ficha.alto != 100)
             {
-                ficha.r = r_start;
-                r_start +=r_step;
+                ficha.r  = r_start;
+                r_start += r_step;
 
-                ficha.g = g_start;
+                ficha.g  = g_start;
                 g_start += g_step;
 
-                ficha.b = b_start;
-                b_start+=b_step;
+                ficha.b  = b_start;
+                b_start += b_step;
 
                 colores.push_back({ficha.r, ficha.g, ficha.b});
             }
@@ -454,14 +482,12 @@ namespace example
 
 //--------------------------------------------------------------------------------------------------
 
-    /* *
-     * Desordena el array de posiciones de las fichas
-     * */
+    ///Desordena el array de posiciones de las fichas
     void Sample_Scene::randomFichasX()
     {
-        int nums[6] = {1,2,3,4,5,6};
+        int nums[6]     = {1,2,3,4,5,6};
         bool indexUsado = true;
-        int indiceX1 = 0;
+        int indiceX1    = 0;
 
         for(int i = 0; i < 6; i++)
         {
@@ -469,131 +495,167 @@ namespace example
         }
 
         do
+        {
+            int index = rand() % 6 + 1 ;
+
+            for ( auto &indice : indices)
             {
-                int index = rand() % 6 + 1 ;
-
-                for ( auto &indice : indices)
+                if (indice == index)
                 {
-                    if (indice == index)
-                    {
-                        indexUsado = false;
-                        indice = 0;
-                    }
+                    indexUsado = false;
+                    indice     = 0;
                 }
+            }
 
-                if (!indexUsado)
-                {
-                    fichasX2[indiceX1] = fichasX[index - 1];
-                    indiceX1++;
-                    indexUsado = true;
-                }
+            if (!indexUsado)
+            {
+                fichasX2[indiceX1] = fichasX[index - 1];
+                indexUsado         = true;
+                indiceX1++;
+            }
 
-            }while (indiceX1 < 6);
+        }while (indiceX1 < 6);
     }
 
     //--------------------------------------------------------------------------------------------------
 
+    ///Inicializa las fichas
     void Sample_Scene::fichasInit()
     {
+        //fichas jugables
         Ficha ficha1;
         fichas.push_back(ficha1);
+
         Ficha ficha2;
         fichas.push_back(ficha2);
+
         Ficha ficha3;
         fichas.push_back(ficha3);
+
         Ficha ficha4;
         fichas.push_back(ficha4);
+
         Ficha ficha5;
         fichas.push_back(ficha5);
+
         Ficha ficha6;
         fichas.push_back(ficha6);
 
-        Ficha reiniciar;
-        reiniciar.left_x = canvas_width/3 + 80;
-        reiniciar.bottom_y = canvas_height/2;
-        reiniciar.colocada = false;
-        reiniciar.ancho = 256;
-        reiniciar.alto = 128;
-        reiniciar.r = 0;
-        reiniciar.g = 1;
-        reiniciar.b = 0;
-        opciones.push_back(reiniciar);
+        //fichas del menu pause
+        Ficha continuar;
+        continuar.left_x   = canvas_width/3 + 80;
+        continuar.bottom_y = canvas_height/1.7;
+        continuar.colocada = false;
+        continuar.ancho    = 256;
+        continuar.alto     = 128;
+        continuar.r        = 0;
+        continuar.g        = 1;
+        continuar.b        = 0;
+        opciones.push_back(continuar);
+
+        Ficha volverMenu;
+        volverMenu.left_x   = canvas_width/3 + 80;
+        volverMenu.bottom_y = canvas_height/2.4;
+        volverMenu.colocada = false;
+        volverMenu.ancho    = 256;
+        volverMenu.alto     = 128;
+        volverMenu.r        = 0;
+        volverMenu.g        = 0;
+        volverMenu.b        = 1;
+        opciones.push_back(volverMenu);
 
         Ficha salir;
-        salir.left_x = canvas_width/3 + 80;
-        salir.bottom_y = canvas_height/3;
+        salir.left_x   = canvas_width/3 + 80;
+        salir.bottom_y = canvas_height/4.2;
         salir.colocada = false;
-        salir.ancho = 256;
-        salir.alto = 128;
-        salir.r = 1;
-        salir.g = 0;
-        salir.b = 0;
+        salir.ancho    = 256;
+        salir.alto     = 128;
+        salir.r        = 1;
+        salir.g        = 0;
+        salir.b        = 0;
         opciones.push_back(salir);
 
-        Ficha pause;
-        pause.left_x = 1150;
-        pause.bottom_y = canvas_height/2 - 50;
-        pause.colocada = false;
-        pause.ancho = 100;
-        pause.alto = 100;
-        pause.r = 0;
-        pause.g = 0;
-        pause.b = 0;
-        fichas.push_back(pause);
+        //fichas del menu final de nivel
+        Ficha otroNivel;
+        otroNivel.left_x   = canvas_width/3 + 80;
+        otroNivel.bottom_y = canvas_height/2;
+        otroNivel.colocada = false;
+        otroNivel.ancho    = 256;
+        otroNivel.alto     = 128;
+        otroNivel.r        = 1;
+        otroNivel.g        = 0;
+        otroNivel.b        = 0;
+        opciones2.push_back(otroNivel);
 
-        //desordena las fichas
+        Ficha salirFinal;
+        salirFinal.left_x   = canvas_width/3 + 80;
+        salirFinal.bottom_y = canvas_height/2 - 128;
+        salirFinal.colocada = false;
+        salirFinal.ancho    = 256;
+        salirFinal.alto     = 128;
+        salirFinal.r        = 0;
+        salirFinal.g        = 0;
+        salirFinal.b        = 1;
+        opciones2.push_back(salirFinal);
+
+        Ficha menuPause;
+        menuPause.left_x   = 1150;
+        menuPause.bottom_y = canvas_height/2 - 50;
+        menuPause.colocada = false;
+        menuPause.ancho    = 100;
+        menuPause.alto     = 100;
+        menuPause.r        = 0;
+        menuPause.g        = 0;
+        menuPause.b        = 0;
+        fichas.push_back(menuPause);
+
         randomFichasX();
 
-        //propiedades de las fichas
+        //propiedades comunes de las fichas jugables
         for(int i = 0; i < numero_de_cajas; i++)
         {
-            fichas[i].left_x = fichasX2[i];
+            fichas[i].left_x   = fichasX2[i];
             fichas[i].bottom_y = fichasY[1];
             fichas[i].colocada = false;
-            fichas[i].ancho = 128;
-            fichas[i].alto = 128;
+            fichas[i].ancho    = 128;
+            fichas[i].alto     = 128;
         }
 
-        //colores de las fichas
         randomRNG();
-
-        for(auto ficha: fichas)
-        {
-            cajas.push_back(&ficha);
-        }
     }
 
     //--------------------------------------------------------------------------------------------------
 
+    ///Inicializa las casillas
     void Sample_Scene::casillasInit()
     {
         //casillas y guardarlas en su vectore
         Casilla casilla1;
         casillas.push_back(casilla1);
+
         Casilla casilla2;
         casillas.push_back(casilla2);
+
         Casilla casilla3;
         casillas.push_back(casilla3);
+
         Casilla casilla4;
         casillas.push_back(casilla4);
+
         Casilla casilla5;
         casillas.push_back(casilla5);
+
         Casilla casilla6;
         casillas.push_back(casilla6);
 
         //propiedades de las casillas
         for(int i = 0; i < numero_de_cajas; i++)
         {
-            casillas[i].left_x = fichasX[i];
+            casillas[i].left_x   = fichasX[i];
             casillas[i].bottom_y = fichasY[0];
-            casillas[i].ancho = 128;
-            casillas[i].alto = 128;
-            casillas[i].ficha = nullptr;
-        }
-
-        for(auto casilla : casillas)
-        {
-            cajas.push_back(&casilla);
+            casillas[i].ancho    = 128;
+            casillas[i].alto     = 128;
+            casillas[i].ficha    = nullptr;
         }
     }
 

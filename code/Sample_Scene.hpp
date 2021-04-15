@@ -39,7 +39,6 @@ namespace example
 
     class Sample_Scene : public basics::Scene
     {
-
         typedef std::shared_ptr< basics::Texture_2D > Texture_Handle;
         typedef std::unique_ptr< basics::Raster_Font > Font_Handle;
 
@@ -52,11 +51,8 @@ namespace example
         };
 
     public:
-        /* *
-         * contenedor para las fichas y las casillas
-         *
-         * funcion contains comprueba si el punto x,y (parámetros) esta dentro de la caja
-         * */
+
+        ///contenedor para las fichas y las casillas
         struct Caja
         {
             float left_x, bottom_y;
@@ -64,15 +60,18 @@ namespace example
 
             virtual void render (Canvas * canvas) = 0;
 
+
+            /// COMPRUEBA SI LA CAJA CONTIENE UN PUNTO DADO
+            /// \param x coordenada x del punto
+            /// \param y coordenada y del punto
+            /// \return true si lo contiene, false si no
             bool contains (float x, float y)
             {
                 return x > left_x && y > bottom_y && x < left_x + ancho && y < bottom_y + alto;
             }
         };
 
-        /* *
-         * ficha coloreada (r,g,b)
-         * */
+        ///ficha coloreada (r,g,b)
         struct Ficha : public Caja
         {
             float r, g, b;
@@ -93,9 +92,7 @@ namespace example
             }
         };
 
-        /* *
-         * Casilla vacía que puede contener un puntero a una ficha (si lo tiene se pinta)
-         * */
+        ///Casilla vacía que puede contener un puntero a una ficha (si lo tiene se pinta)
         struct Casilla : public Caja
         {
             Ficha * ficha;
@@ -115,9 +112,7 @@ namespace example
             }
         };
 
-        /* *
-         * Color con r,g,b
-         * */
+        ///Color con r, g, b
         struct RGB
         {
             float r, g, b;
@@ -125,10 +120,10 @@ namespace example
 
         std::vector< Ficha   > fichas;
         std::vector< Ficha   > opciones;
+        std::vector< Ficha   > opciones2;
         std::vector< Casilla > casillas;
-        std::vector< Caja * > cajas;
-        std::vector< RGB > colores;
-        std::vector< int > indices;
+        std::vector< RGB     > colores;
+        std::vector< int     > indices;
 
         Ficha * ficha_tocada;
         float   ficha_tocada_posicion_inicial_x;
@@ -136,24 +131,22 @@ namespace example
 
         const static int numero_de_cajas = 6;
 
-        float       fichasX [numero_de_cajas] = {110, 287, 465, 643, 822, 1000};
+        float       fichasX  [numero_de_cajas]   = {110, 287, 465, 643, 822, 1000};
         float       fichasX2 [numero_de_cajas];
-        float       fichasY [2] = {117, 478};
+        float       fichasY  [2]                 = {117, 478};
 
         unsigned    canvas_width;
         unsigned    canvas_height;
 
         int         fichas_colocadas;
-        bool        win_condition;
-        bool        pause;
 
     private:
 
-        State                 state;
-        bool                  suspended;
+        State          state;
+        bool           suspended;
 
-        Texture_Handle        texture;
-        Font_Handle           font;
+        Texture_Handle texture;
+        Font_Handle    font;
 
     public:
 
@@ -174,10 +167,10 @@ namespace example
 
     private:
 
-        void randomRNG ();
+        void randomRNG     ();
         void randomFichasX ();
-        void fichasInit ();
-        void casillasInit ();
+        void fichasInit    ();
+        void casillasInit  ();
     };
 
 }

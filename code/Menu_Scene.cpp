@@ -28,50 +28,44 @@ namespace example
     {
         canvas_width  = 1280;
         canvas_height =  720;
-        suspended = false;
-        state = Intro;
+        suspended     = false;
+        state         = Intro;
     }
 
 //--------------------------------------------------------------------------------------------------
 
     bool Menu_Scene::initialize ()
     {
-
         //crea las fichas y les asigna sus propiedades
-
         Sample_Scene::Ficha jugar;
-        jugar.left_x = canvas_width/3 + 80;
         jugar.bottom_y = canvas_height/1.7;
-        jugar.colocada = false;
-        jugar.ancho = 256;
-        jugar.alto = 128;
-        jugar.r = 0;
-        jugar.g = 0;
-        jugar.b = 1;
+        jugar.r        = 0;
+        jugar.g        = 0;
+        jugar.b        = 1;
         opciones.push_back(jugar);
 
         Sample_Scene::Ficha salir;
-        salir.left_x = canvas_width/3 + 80;
         salir.bottom_y = canvas_height/2.4;
-        salir.colocada = false;
-        salir.ancho = 256;
-        salir.alto = 128;
-        salir.r = 0;
-        salir.g = 0;
-        salir.b = 0.5;
+        salir.r        = 0;
+        salir.g        = 0;
+        salir.b        = 0.5;
         opciones.push_back(salir);
 
         Sample_Scene::Ficha ayuda;
-        ayuda.left_x = canvas_width/3 + 80;
         ayuda.bottom_y = canvas_height/4.2;
-        ayuda.colocada = false;
-        ayuda.ancho = 256;
-        ayuda.alto = 128;
-        ayuda.r = 0;
-        ayuda.g = 0;
-        ayuda.b = 0.3;
+        ayuda.r        = 0;
+        ayuda.g        = 0;
+        ayuda.b        = 0.3;
         opciones.push_back(ayuda);
 
+        //propiedades comunes a todas las opciones
+        for( auto &opcion : opciones)
+        {
+            opcion.left_x = canvas_width/3 + 80;
+            opcion.colocada = false;
+            opcion.ancho = 256;
+            opcion.alto = 128;
+        }
         return true;
     }
 
@@ -97,32 +91,34 @@ namespace example
         {
             case ID(touch-started):
             {
-                if(state == Intro)
-                {
-                    state = MenuPpal;
-                }
-                else if(state == MenuPpal)
+                if(state == MenuPpal)
                 {
                     float x = *event[ID(x)].as< var::Float > ();
                     float y = *event[ID(y)].as< var::Float > ();
 
-                    //opciones del menu
                     for( auto &opcion : opciones)
                     {
                         if(opcion.contains(x,y))
                         {
+                            //si toca la opcion jugar
                             if(opcion.b == 1)
                             {
                                 director.run_scene (shared_ptr< Scene >(new Sample_Scene));
-                            } else if (opcion.b == 0.5){
+                            }
+                            //si toca la opcion ayuda
+                            else if (opcion.b == 0.5){
                                 state = Ayuda;
-                            } else{
+                            }
+                            //si toca la opcion salir
+                            else{
                                 director.stop();
                             }
                         }
                     }
                     break;
-                }else{
+                }
+                //pantalla de intro o de ayuda
+                else{
                     state = MenuPpal;
                 }
             }
@@ -157,7 +153,6 @@ namespace example
                 canvas = Canvas::create(ID(canvas), context, {{canvas_width, canvas_height}});
             }
 
-            //pinta el menu
             if (canvas)
             {
                 if(state == Intro)
@@ -204,7 +199,6 @@ namespace example
                         Text_Layout ayudaTxt1 (*font, L"Coloca las fichas superiores en las casillas inferiores por orden de color,");
                         Text_Layout ayudaTxt2 (*font, L"la más oscura tiene que quedar a la izquierda y la más clara a la derecha.");
                         Text_Layout ayudaTxt3 (*font, L"Toca la pantalla para volver...");
-
 
                         canvas->draw_text({canvas_width/2 - 10, canvas_height/2 + 130}, ayudaTxt1, CENTER);
                         canvas->draw_text({canvas_width/2 - 10, canvas_height/2      }, ayudaTxt2, CENTER);

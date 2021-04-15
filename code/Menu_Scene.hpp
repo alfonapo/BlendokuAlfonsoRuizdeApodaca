@@ -53,9 +53,9 @@ namespace example
 
     private:
 
-        state                 state;
-        bool                  suspended;
-        Font_Handle           font;
+        state       state;
+        bool        suspended;
+        Font_Handle font;
 
     public:
 
